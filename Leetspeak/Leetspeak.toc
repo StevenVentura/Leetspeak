@@ -1,0 +1,7 @@
+## Interface: 60200
+## Title: Leetspeak
+## Notes: Speak in 1337 !!!
+## SavedVariables: LeetspeakOptions
+
+Leetspeak.lua
+Leetspeak.xml
