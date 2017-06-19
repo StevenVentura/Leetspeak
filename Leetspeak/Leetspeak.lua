@@ -22,8 +22,10 @@ local specialLeetspeakModeName = {[1]="Normal",
 								[3]="乚当当干",
 								[4]="驫繰総麤"};
 leetspeak_bgframe = CreateFrame('Frame','leetspeak_bgframe',UIParent);
-leetspeak_bgframe:SetClampedToScreen(true);
-
+leetspeak_bgframe:SetPoint("TOPRIGHT",ChatFrame1,"TOPRIGHT",0,0)
+leetspeak_bgframe:Hide();
+Leetspeak = CreateFrame("FRAME");
+Leetspeak:SetScript("OnUpdate", function(self, elapsed) LeetspeakOnUpdate(self, elapsed) end)
 
 
 SLASH_LEETSPEAK1 = '/leetspeak';
@@ -34,14 +36,27 @@ speakEnabled = 1--2 is on, 1 is off. 3 is japSpeak, 4 is random Kanji.
 insideSquareBrackets = 0--0 is false, 1 is true. if true, then don't convert text inside brackets.
 function slashleetspeak(msg, editBox)
 	local command, rest = msg:match("^(%S*)%s*(.-)$");
-	print("|cff5500ffResetting Leetspeak frame position");
-	leetspeak_bgframe:SetPoint("BOTTOMLEFT",
-				300,
-				300);
+print("|cffff8800Leetspeak: click on the lil popup thinger when you hit enter to change your text mode xd")
+	
 
 	
 end
 
+LeetspeakTimeElapsed = 0;
+
+function LeetspeakOnUpdate(self, elapsed)
+LeetspeakTimeElapsed = LeetspeakTimeElapsed + elapsed;
+if (LeetspeakTimeElapsed > 1/2) then
+LeetspeakTimeElapsed = 0;
+if (ChatFrame1EditBox:HasFocus()) then
+leetspeak_bgframe:Show();
+else
+leetspeak_bgframe:Hide();
+end
+
+end
+
+end--end function LeetspeakOnUpdate
 
 --------------------------------------------------------------------
 
@@ -407,11 +422,13 @@ if (utf8sub(s,i,4) == '\|cff') then return 1; end
 end--end for
 return 0;
 end--end detectLink
+
 function LeetOutgoing(chatEntry, send)
+
 	-- This function actually gets called every time the user hits a key. But the
     -- send flag will only be set when he hits return to send the message.
     if (send == 1) then
-      local text = chatEntry:GetText(); -- Here's how you get the original text
+	  local text = chatEntry:GetText(); -- Here's how you get the original text
 	  
 	  
 	  --Replace 1/2 and 3/4 and stuff with the fractions. if addon is on or not, doesnt matter.
@@ -429,20 +446,14 @@ local linkDetected = detectLink(text);
 	  chatEntry:SetText( newText );     -- send the new text back to the UI
 	  
 	  insideSquareBrackets = 0;
+	  
+	  
+	  
     end
 end
 
 function Leetspeak_initialize()
 
-if (not(LeetspeakOptions)) then
-LeetspeakOptions = {
-["PositionX"] = 250;
-["PositionY"] = 250;
-}
-end
-leetspeak_bgframe:SetPoint("BOTTOMLEFT",
-				LeetspeakOptions["PositionX"],
-				LeetspeakOptions["PositionY"]);
 
 	ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL",LeetIncoming);
 	ChatFrame_AddMessageEventFilter("CHAT_MSG_EMOTE",LeetIncoming);
@@ -464,21 +475,11 @@ leetspeak_bgframe:SetPoint("BOTTOMLEFT",
 leetspeak_bgframe:SetFrameStrata('HIGH');
 leetspeak_bgframe:SetSize(100,16);--80
 
-leetspeak_bgframe:SetMovable(true);
-leetspeak_bgframe:EnableMouse(true);
-leetspeak_bgframe:RegisterForDrag("LeftButton");
-leetspeak_bgframe:SetScript("OnDragStart", leetspeak_bgframe.StartMoving)
-leetspeak_bgframe:SetScript("OnDragStop", function(self)
-self:StopMovingOrSizing();
---save position of frame
-local x, y = self:GetLeft(), self:GetBottom();
-LeetspeakOptions["PositionX"] = x;
-LeetspeakOptions["PositionY"] = y;
-end );--end function
+
 local tex = leetspeak_bgframe:CreateTexture("ARTWORK");
  tex:SetAllPoints();
  tex:SetTexture(0.1686274509803922,0.0588235294117647,0.003921568627451); tex:SetAlpha(0.80);
- titleText = leetspeak_bgframe:CreateFontString("titleText",leetspeak_bgframe,"GameFontNormal");
+ local titleText = leetspeak_bgframe:CreateFontString("titleText",leetspeak_bgframe,"GameFontNormal");
  titleText:SetTextColor(1,0.643,0.169,1);
  titleText:SetShadowColor(0,0,0,1);
  titleText:SetShadowOffset(2,-1);
@@ -486,10 +487,10 @@ local tex = leetspeak_bgframe:CreateTexture("ARTWORK");
 titleText:SetText("LeetSpeak");
 titleText:Show();
 
-leetspeak_bgframe:Show();
+
 
 -- Create the dropdown, and configure its appearance
-CreateFrame("FRAME", "LSDD", UIParent, "UIDropDownMenuTemplate")
+CreateFrame("FRAME", "LSDD", leetspeak_bgframe, "UIDropDownMenuTemplate")
 LSDD:SetPoint("TOPLEFT",leetspeak_bgframe,"BOTTOMLEFT",-24,0);
 LSDD:SetFrameStrata('HIGH');
 UIDropDownMenu_SetWidth(LSDD, 100)
@@ -518,13 +519,8 @@ UIDropDownMenu_SetText(LSDD, specialLeetspeakModeName[speakEnabled])
 end
 
 LSDD:Show();
-leetspeak_bgframe:Show();
+
 	------------------
 	print("|cff00ff00" .. "Leetspeak Initialized!");
 end
 
-function leetspeak_bgframe:OnDragStart(self,...)
-leetspeak_bgframe:startMoving();
-end
-function leetspeak_bgframe:OnMouseDown(...)
-end

@@ -5,10 +5,11 @@
       <Scripts> 
          <OnLoad> 
             self:RegisterEvent("VARIABLES_LOADED");
+			Leetspeak_initialize();
          </OnLoad>
          <OnEvent> 
            
-               	Leetspeak_initialize();
+               	
              
             
          </OnEvent>
